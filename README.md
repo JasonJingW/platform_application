@@ -10,11 +10,11 @@
 
 本仓 CMakeLists.txt 仅提供 application::main、application::task_manage、application::heartbeat 源码接口，最终由主仓 build/gcc 决定是否链接。INTERFACE 源码进入最终固件目标，可选任务不会因普通静态库的按需提取而丢失。增加其他可选任务时，在本仓声明对应接口，并由主仓构建后端选择。此机制针对当前 ARM GCC/ELF 工具链。
 
-`task/task_heartbeat.c` 实现 `heartBeat_process()` 和 `heartBeat_create(priority)`；名称、栈深度、周期及接口声明均位于 `task/task_heartbeat.h`。当前每 50 ms 翻转 LED0，栈为 512 个 32 位字（2 KiB），优先级由 task_config.h 的 `HEARTBEAT_TASK_PRIORITY` 指定，默认 idle+1。构建时加入 `main.c`、`task/task_manage.c`，按需加入 `task/task_heartbeat.c`。现有 `board/config` 包含路径即可找到任务配置，无需增加路径。
+`task/task_heartbeat.c` 实现 `heartBeat_process()` 和 `heartBeat_create(priority)`；名称、栈深度、周期及接口声明均位于 `task/task_heartbeat.h`。当前每 500 ms 翻转 LED0、每 1000 ms 翻转 LED1，栈为 512 个 32 位字（2 KiB），优先级由 task_config.h 的 `HEARTBEAT_TASK_PRIORITY` 指定，默认 idle+1。构建时加入 `main.c`、`task/task_manage.c`，按需加入 `task/task_heartbeat.c`。现有 `board/config` 包含路径即可找到任务配置，无需增加路径。
 
 任务名称、栈、周期和启动延时直接在 task/task_heartbeat.h 中修改；优先级仍统一由 board/config/task_config.h 设置。主仓 GCC_HEARTBEAT=AUTO 随 FreeRTOS 启用，也可显式 ON/OFF 覆盖；最终源码选择在 build/gcc，管理模块通过弱引用兼容排除任务。
 
-心跳任务使用 xTaskDelayUntil 固定周期调度，默认周期 50 ms；HEARTBEAT_TASK_START_DELAY_MS 默认 0，表示任务开始后立即执行第一次 LED 翻转。非零值先延时，再建立固定周期基准。周期调度不会消除任务超时或抢占造成的延迟。
+心跳任务使用 xTaskDelayUntil 固定周期调度，默认任务周期 50 ms，LED0 通过 HEARTBEAT_LED_TOGGLE_INTERVAL_MS 设置为每 500 ms 翻转，LED1 通过 HEARTBEAT_LED1_TOGGLE_INTERVAL_MS 设置为每 1000 ms 翻转；HEARTBEAT_TASK_START_DELAY_MS 默认 0，表示任务开始后立即执行第一次 LED 翻转。非零值先延时，再建立固定周期基准。周期调度不会消除任务超时或抢占造成的延迟。
 
 应用提供内存分配失败、栈溢出钩子，失败时停止运行等待调试；SysTick/HardFault 位于芯片 `system_init.c`，SVC/PendSV 位于选中的 RTOS 移植层。
 

@@ -16,9 +16,23 @@ void heartBeat_process(void *argument)
         vTaskDelay(pdMS_TO_TICKS(HEARTBEAT_TASK_START_DELAY_MS));
     }
     TickType_t last_wake_time = xTaskGetTickCount();
+    TickType_t last_led_toggle = last_wake_time;
+    TickType_t last_led1_toggle = last_wake_time;
+    Board_LEDToggle(0);
+    Board_LEDToggle(1);
     for (;;)
     {
-        Board_LEDToggle(0);
         xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(HEARTBEAT_TASK_PERIOD_MS));
+        TickType_t now = xTaskGetTickCount();
+        if ((TickType_t)(now - last_led_toggle) >= pdMS_TO_TICKS(HEARTBEAT_LED_TOGGLE_INTERVAL_MS))
+        {
+            Board_LEDToggle(0);
+            last_led_toggle = now;
+        }
+        if ((TickType_t)(now - last_led1_toggle) >= pdMS_TO_TICKS(HEARTBEAT_LED1_TOGGLE_INTERVAL_MS))
+        {
+            Board_LEDToggle(1);
+            last_led1_toggle = now;
+        }
     }
 }

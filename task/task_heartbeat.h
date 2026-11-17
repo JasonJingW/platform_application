@@ -7,6 +7,7 @@
 #define HEARTBEAT_TASK_NAME "heartbeat"
 #define HEARTBEAT_TASK_STACK_DEPTH 512U
 #define HEARTBEAT_TASK_PERIOD_MS 50U
+#define HEARTBEAT_TASK_START_DELAY_MS 0U
 
 #ifdef __cplusplus
 extern "C" {

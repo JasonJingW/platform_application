@@ -11,9 +11,14 @@ void heartBeat_process(void *argument)
 {
     (void)argument;
     RLOG_INFO("FreeRTOS heartbeat task started");
+    if (HEARTBEAT_TASK_START_DELAY_MS > 0U)
+    {
+        vTaskDelay(pdMS_TO_TICKS(HEARTBEAT_TASK_START_DELAY_MS));
+    }
+    TickType_t last_wake_time = xTaskGetTickCount();
     for (;;)
     {
         Board_LEDToggle(0);
-        vTaskDelay(pdMS_TO_TICKS(HEARTBEAT_TASK_PERIOD_MS));
+        xTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(HEARTBEAT_TASK_PERIOD_MS));
     }
 }

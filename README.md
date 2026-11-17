@@ -1,1 +1,23 @@
 # platform_application
+
+应用通过 `#include "project_config.h"` 统一引入标准库、芯片接口、RTT 和 RTOS 接口，使用板级功能时另行包含 `board.h`。使用方需提供主项目 `board/config`、`board/bsp` 及现有芯片和 RTT 包含路径。RTT Viewer 是电脑端工具，固件使用配置头引入的 RTT 通信及日志接口。
+
+`main.c` 保留应用入口。启动时先调用 `hardware_init()` 初始化芯片支持的缓存和 HAL，再初始化 RTT、板级 LED 和时钟，最后调用 `task_start()`。
+
+`task/task_manage.c/.h` 管理任务创建、调度器启动和 RTOS 错误钩子。`task_start()` 在初始化完成后调用一次，不返回。
+
+主项目 `board/config/task_config.h` 仅集中保存任务优先级。`task_manage.c` 只包含自己的头文件和 `task_config.h`，不依赖具体任务的私有头文件；任务创建函数仅在管理文件中声明为 GCC 弱引用，实际实现仍为普通强符号；管理模块仅向创建函数传入优先级。`task_create_optional()` 检查入口：已链接则创建，未链接则输出 WAR 并跳过；没有应用任务时仍可启动调度器运行内核任务。因此可以只从 CMake 固件源列表中移除 `task/task_heartbeat.c`，无需再添加 C 宏开关。管理模块不要求被排除任务的私有头文件存在，但共享的 task_config.h 必须保留。
+
+例如将 `task/task_manage.c` 始终列入 `target_sources(firmware PRIVATE ...)`，按需将 `task/task_heartbeat.c` 加入或移出同一列表；`firmware` 替换为实际固件目标名。目前工程还没有固件 CMakeLists.txt，因此此次未添加构建开关。任务对象需直接链接进固件或通过 OBJECT 库加入；普通 STATIC 库中的对象可能不会被弱引用拉入。增加其他可选任务时，在管理文件中添加对应的弱声明和 `task_create_optional()` 调用即可。此机制针对当前 ARM GCC/ELF 工具链。
+
+`task/task_heartbeat.c` 实现 `heartBeat_process()` 和 `heartBeat_create(priority)`；名称、栈深度、周期及接口声明均位于 `task/task_heartbeat.h`。当前每 50 ms 翻转 LED0，栈为 512 个 32 位字（2 KiB），优先级由 task_config.h 的 `HEARTBEAT_TASK_PRIORITY` 指定，默认 idle+1。构建时加入 `main.c`、`task/task_manage.c`，按需加入 `task/task_heartbeat.c`。现有 `board/config` 包含路径即可找到任务配置，无需增加路径。
+
+应用提供内存分配失败、栈溢出钩子，失败时停止运行等待调试；SysTick/HardFault 位于芯片 `system_init.c`，SVC/PendSV 位于选中的 RTOS 移植层。
+
+`hardware_init()` 位于 `platform_common/core/stm32f7xx/system_init.c`；构建时加入该源文件，并将其所在目录加入包含路径。
+
+以太网初始化、网络轮询及 IP/端口等应用配置已移出当前代码；修改前的完整文件保存在主仓库外的暂存备份中。
+
+不提供自定义 C 库系统调用适配。后续按需使用标准库，具体输入输出和堆内存支持由工具链、运行库及链接配置确定。日志使用 `platform_common/RTT/RTT/SEGGER_RTT.h` 中的 `RLOG_INFO`（绿色）、`RLOG_ERR`（红色）、`RLOG_WAR`（黄色），自动换行；构建时使用 `platform_common/RTT/RTT` 和 `platform_common/RTT/Config` 包含路径。
+
+应用依赖主项目 BSP、`board/config/FreeRTOSConfig.h` 和 platform_common 中的 STM32F7、RTT、FreeRTOS。实际配置已通过 ARM GCC 编译及可重定位链接检查；当前尚无最终链接配置，未验证完整固件链接与烧录。

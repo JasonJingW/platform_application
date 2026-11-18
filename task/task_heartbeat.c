@@ -10,7 +10,6 @@ BaseType_t heartBeat_create(UBaseType_t priority)
 void heartBeat_process(void *argument)
 {
     (void)argument;
-    RLOG_INFO("FreeRTOS heartbeat task started");
     if (HEARTBEAT_TASK_START_DELAY_MS > 0U)
     {
         vTaskDelay(pdMS_TO_TICKS(HEARTBEAT_TASK_START_DELAY_MS));

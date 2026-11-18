@@ -24,4 +24,6 @@
 
 不提供自定义 C 库系统调用适配。后续按需使用标准库，具体输入输出和堆内存支持由工具链、运行库及链接配置确定。日志使用 `platform_common/RTT/RTT/SEGGER_RTT.h` 中的 `RLOG_INFO`（绿色）、`RLOG_ERR`（红色）、`RLOG_WAR`（黄色），自动换行；构建时使用 `platform_common/RTT/RTT` 和 `platform_common/RTT/Config` 包含路径。
 
+日志文本统一使用 ASCII 标点。`RLOG_PRINT(...)` 提供格式化纯文本行输出，不添加等级前缀或颜色，不受 `RTT_LOG_LEVEL` 过滤；关闭 `PROJECT_USE_RTT` 时编译为空操作。普通日志继续使用 `RLOG_INFO`、`RLOG_WAR`、`RLOG_ERR`，保留 `[INFO]`、`[WAR]`、`[ERR]` 前缀、等级过滤及可选颜色。两类接口均自动追加 `\r\n`，调用处不再添加换行。开机信息使用 `RLOG_PRINT`，以 40 个 `-` 作为上下分隔线，字段按 `Project :`、`Version :`、`Build   :` 对齐。项目名称、版本、编译日期和时间统一取自主项目 `board/config/version.h`，日期时间使用编译器的 `__DATE__`、`__TIME__`；心跳任务不打印启动信息。
+
 应用依赖主项目 BSP、board/config 和 common::stm32f7xx。主仓定义 PROJECT_USE_FREERTOS / PROJECT_USE_RTT 控制 RTOS 与日志接口；裸机入口保持等待中断。已通过完整固件链接及功能关闭组合构建，尚未上板运行。

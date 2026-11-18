@@ -2,7 +2,7 @@
 
 应用通过 `#include "project_config.h"` 统一引入标准库、芯片接口、RTT 和 RTOS 接口，使用板级功能时另行包含 `board.h`。使用方需提供主项目 `board/config`、`board/bsp` 及现有芯片和 RTT 包含路径。RTT Viewer 是电脑端工具，固件使用配置头引入的 RTT 通信及日志接口。
 
-`main.c` 保留应用入口。启动时先调用 `hardware_init()` 初始化芯片支持的缓存和 HAL，再初始化 RTT、板级 LED 和时钟，最后调用 `task_start()`。
+`main.c` 保留应用入口。启动时先调用 `hardware_init()` 配置缓存、MPU 共享区和 HAL，再初始化 RTT、板级 LED 和时钟，最后调用 `task_start()`。
 
 `task/task_manage.c/.h` 管理任务创建、调度器启动和 RTOS 错误钩子。`task_start()` 在初始化完成后调用一次，不返回。
 

@@ -10,7 +10,7 @@
 
 本仓 CMakeLists.txt 仅提供 application::main、application::task_manage、application::heartbeat 源码接口，最终由主仓 build/gcc 决定是否链接。INTERFACE 源码进入最终固件目标，可选任务不会因普通静态库的按需提取而丢失。增加其他可选任务时，在本仓声明对应接口，并由主仓构建后端选择。此机制针对当前 ARM GCC/ELF 工具链。
 
-`heartbeat.h` 向任务层提供空的初始化入口 `heartbeat_init()` 和周期入口 `heartbeat_process(period)`。状态灯沿用 GPIO 初始电平，随后按累计周期翻转。计时状态保存在 `system_runningLed()` 内部，默认累计每 500 ms 翻转 `MCU_LED`，每 1000 ms 翻转 `MCU_LED1`。
+`heart_beat/heartbeat.h` 向任务层提供空的初始化入口 `heartbeat_init()` 和周期入口 `heartbeat_process(period)`。状态灯沿用 GPIO 初始电平，随后按累计周期翻转。计时状态保存在 `system_runningLed()` 内部，默认累计每 500 ms 翻转 `MCU_LED`，每 1000 ms 翻转 `MCU_LED1`。
 
 `task/task_heartbeat.c/.h` 负责 FreeRTOS 任务创建、栈深度和周期。启动时读取一次 tick 作为 `xTaskDelayUntil()` 的调度基准。每次唤醒后将 `HEARTBEAT_TASK_PERIOD_MS`（默认 50 ms）传给状态灯接口。任务优先级由 `board/config/task_config.h` 设置。
 

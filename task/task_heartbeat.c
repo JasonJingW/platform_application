@@ -1,5 +1,5 @@
 #include "task_heartbeat.h"
-#include "../heartbeat.h"
+#include "../heart_beat/heartbeat.h"
 
 static void task_heartbeat_process(void *argument)
 {

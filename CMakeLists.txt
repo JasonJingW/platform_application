@@ -7,6 +7,6 @@ endforeach()
 target_sources(application_main INTERFACE "${CMAKE_CURRENT_LIST_DIR}/main.c")
 target_sources(application_task_manage INTERFACE "${CMAKE_CURRENT_LIST_DIR}/task/task_manage.c")
 target_sources(application_heartbeat INTERFACE
-    "${CMAKE_CURRENT_LIST_DIR}/heartbeat.c"
+    "${CMAKE_CURRENT_LIST_DIR}/heart_beat/heartbeat.c"
     "${CMAKE_CURRENT_LIST_DIR}/task/task_heartbeat.c"
 )

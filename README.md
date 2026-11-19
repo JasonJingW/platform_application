@@ -27,3 +27,7 @@
 日志文本统一使用 ASCII 标点。`RLOG_PRINT(...)` 提供格式化纯文本行输出，不添加等级前缀或颜色，不受 `RTT_LOG_LEVEL` 过滤；关闭 `PROJECT_USE_RTT` 时编译为空操作。普通日志继续使用 `RLOG_INFO`、`RLOG_WAR`、`RLOG_ERR`，保留 `[INFO]`、`[WAR]`、`[ERR]` 前缀、等级过滤及可选颜色。两类接口均自动追加 `\r\n`，调用处不再添加换行。开机信息使用 `RLOG_PRINT`，以 40 个 `-` 作为上下分隔线，字段按 `Project :`、`Version :`、`Build   :` 对齐。项目名称、版本、编译日期和时间统一取自主项目 `board/config/version.h`，日期时间使用编译器的 `__DATE__`、`__TIME__`；心跳任务不打印启动信息。
 
 应用依赖主项目 BSP、board/config、common::stm32f7xx 和 FreeRTOS。主仓固定启用 FreeRTOS，并通过 `PROJECT_USE_RTT` 控制日志接口。
+
+`audio/es8388/es8388.c/.h` 是 ES8388 器件驱动。`es8388_init()` 依次调用 BSP 初始化 I²C2、SAI1，再写入编解码器寄存器。默认选择板载麦克风和扬声器，DAC 保持静音。输入可切换到 LINE_IN，输出可切换到耳机或同时开启两路。录音使用 SAI1 B 块，时钟由 A 块提供。
+
+`task/task_audio.c/.h` 在调度器启动后调用一次 `audio_init()`，向 RTT 报告结果并删除自身。初始化成功后，FreeRTOS 任务可调用 `audio_record(pcm, frames)` 录音或 `audio_play(pcm, frames)` 播放。这两个接口都是阻塞调用，使用约 48 kHz 的有符号 16 位 PCM，每帧包含左右声道各一个采样。录放互斥，播放结束后恢复 DAC 静音。

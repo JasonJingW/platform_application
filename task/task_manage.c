@@ -4,6 +4,7 @@
 /* Only the manager's reference is weak; the task implementation stays strong.
  * An omitted task source resolves to NULL with the ARM GCC/ELF linker. */
 extern BaseType_t task_heartbeat_create(UBaseType_t priority) __attribute__((weak));
+extern BaseType_t task_audio_create(UBaseType_t priority) __attribute__((weak));
 
 void vApplicationMallocFailedHook(void)
 {
@@ -41,6 +42,8 @@ static void task_create_optional(BaseType_t (*create)(UBaseType_t), UBaseType_t 
 void task_start(void)
 {
     task_create_optional(task_heartbeat_create, HEARTBEAT_TASK_PRIORITY);
+    task_create_optional(task_audio_create, AUDIO_TASK_PRIORITY);
+
     vTaskStartScheduler();
     /* The scheduler must not return; do not use HAL_Delay after this failure. */
     taskDISABLE_INTERRUPTS();

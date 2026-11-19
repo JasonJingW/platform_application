@@ -1,6 +1,6 @@
 #include "project_config.h"
 #include "bsp_gpio.h"
-#include "task/task_manage.h"
+#include "task_manage.h"
 
 int main(void)
 {

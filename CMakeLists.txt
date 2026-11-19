@@ -4,7 +4,7 @@ foreach(_component IN ITEMS main task_manage heartbeat)
     add_library(application_${_component} INTERFACE)
     add_library(application::${_component} ALIAS application_${_component})
 endforeach()
-target_sources(application_main INTERFACE "${CMAKE_CURRENT_LIST_DIR}/main.c")
+target_sources(application_main INTERFACE "${CMAKE_CURRENT_LIST_DIR}/task/main.c")
 target_sources(application_task_manage INTERFACE "${CMAKE_CURRENT_LIST_DIR}/task/task_manage.c")
 target_sources(application_heartbeat INTERFACE
     "${CMAKE_CURRENT_LIST_DIR}/heart_beat/heartbeat.c"

@@ -8,7 +8,7 @@
 
 主项目 `board/config/task_config.h` 保存任务优先级。`task_manage.c` 通过弱引用创建可选心跳任务，关闭 `GCC_HEARTBEAT` 时跳过该任务，调度器仍可启动。
 
-本仓 CMakeLists.txt 仅提供 application::main、application::task_manage、application::heartbeat 源码接口，最终由主仓 build/gcc 决定是否链接。INTERFACE 源码进入最终固件目标，可选任务不会因普通静态库的按需提取而丢失。增加其他可选任务时，在本仓声明对应接口，并由主仓构建后端选择。此机制针对当前 ARM GCC/ELF 工具链。
+本仓 CMakeLists.txt 提供 `application::main`、`application::task_manage`、`application::heartbeat`、`application::audio`、`application::es8388` 和 `application::network` 源码接口，最终由主仓 build/gcc 决定是否链接。INTERFACE 源码进入最终固件目标，可选任务不会因普通静态库的按需提取而丢失。此机制针对当前 ARM GCC/ELF 工具链。
 
 `heart_beat/heartbeat.h` 向任务层提供空的初始化入口 `heartbeat_init()` 和周期入口 `heartbeat_process(period)`。状态灯沿用 GPIO 初始电平，随后按累计周期翻转。计时状态保存在 `system_runningLed()` 内部，默认累计每 500 ms 翻转 `MCU_LED`，每 1000 ms 翻转 `MCU_LED1`。
 
@@ -20,7 +20,7 @@
 
 `hardware_init()` 位于 `platform_common/core/stm32f7xx/system_init.c`；构建时加入该源文件，并将其所在目录加入包含路径。
 
-以太网初始化、网络轮询及 IP/端口等应用配置已移出当前代码；修改前的完整文件保存在主仓库外的暂存备份中。
+`task/task_network.c` 调用 `network_init()` 和 `network_process()`，在同一个 FreeRTOS 任务中管理 lwIP、处理以太网收发和协议定时器。IPv4、掩码、网关和测试用的 UDP 回显端口位于主仓 `board/config/network_config.h`。
 
 不提供自定义 C 库系统调用适配。后续按需使用标准库，具体输入输出和堆内存支持由工具链、运行库及链接配置确定。日志使用 `platform_common/RTT/RTT/SEGGER_RTT.h` 中的 `RLOG_INFO`（绿色）、`RLOG_ERR`（红色）、`RLOG_WAR`（黄色），自动换行；构建时使用 `platform_common/RTT/RTT` 和 `platform_common/RTT/Config` 包含路径。
 

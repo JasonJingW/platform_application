@@ -1,10 +1,11 @@
 # No component is enabled here. INTERFACE sources enter the final executable
 # only when the parent build links the corresponding interface target.
-foreach(_component IN ITEMS main task_manage heartbeat audio es8388 network)
+foreach(_component IN ITEMS main task_manage heartbeat audio es8388 network cli version)
     add_library(application_${_component} INTERFACE)
     add_library(application::${_component} ALIAS application_${_component})
 endforeach()
 target_sources(application_main INTERFACE "${CMAKE_CURRENT_LIST_DIR}/task/main.c")
+target_sources(application_version INTERFACE "${CMAKE_CURRENT_LIST_DIR}/version/version.c")
 target_sources(application_task_manage INTERFACE "${CMAKE_CURRENT_LIST_DIR}/task/task_manage.c")
 target_sources(application_heartbeat INTERFACE
     "${CMAKE_CURRENT_LIST_DIR}/heart_beat/heartbeat.c"
@@ -19,4 +20,8 @@ target_sources(application_audio INTERFACE
 target_sources(application_network INTERFACE
     "${CMAKE_CURRENT_LIST_DIR}/network/network.c"
     "${CMAKE_CURRENT_LIST_DIR}/task/task_network.c"
+)
+target_sources(application_cli INTERFACE
+    "${CMAKE_CURRENT_LIST_DIR}/cli/cli.c"
+    "${CMAKE_CURRENT_LIST_DIR}/task/task_cli.c"
 )

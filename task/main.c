@@ -2,16 +2,21 @@
 #include "bsp_gpio.h"
 #include "task_manage.h"
 
+static void boot_version_line(const char *line)
+{
+    (void)line;
+    RLOG_PRINT("%s", line);
+}
+
 int main(void)
 {
     hardware_init();
     segger_rtt_init();
     bsp_gpio_init();
 
+    version_print_banner(boot_version_line);
     RLOG_PRINT("----------------------------------------");
-    RLOG_PRINT("Project : %s", PROJECT_NAME);
-    RLOG_PRINT("Version : %s", PROJECT_VERSION_STRING);
-    RLOG_PRINT("Build   : %s %s", PROJECT_BUILD_DATE, PROJECT_BUILD_TIME);
+    version_print_info(boot_version_line);
     RLOG_PRINT("----------------------------------------");
 
     task_start();

@@ -1,13 +1,14 @@
 #include "cli.h"
 #include "project_config.h"
 #include "bsp_usart.h"
+#include "cli_audio.h"
 
 #define CLI_LINE_SIZE (64U)
 #define CLI_HISTORY_SIZE (8U)
 #define CLI_PROMPT "> "
 #define CLI_SECTION_INDENT "  "
 #define CLI_DETAIL_INDENT CLI_SECTION_INDENT CLI_SECTION_INDENT
-#define CLI_HELP_COMMAND_WIDTH (10)
+#define CLI_HELP_COMMAND_WIDTH (14)
 
 typedef struct
 {
@@ -52,6 +53,9 @@ static const cli_command_t cli_commands[] = {
     {"clear", "Clear the terminal screen", cli_clear},
     {"version", "Show firmware and build information", cli_version},
     {"status", "Show system clock and RTOS tick count", cli_status},
+    {"audio tone", "Play a short speaker test tone", cli_audio_tone},
+    {"audio loopback", "Record the onboard mic and play it back", cli_audio_loopback},
+    {"audio replay", "Play the most recent mic recording", cli_audio_replay},
 };
 
 #define CLI_COMMAND_COUNT (sizeof(cli_commands) / sizeof(cli_commands[0]))
@@ -210,7 +214,13 @@ static void cli_write_line(const char *line)
     cli_write("\r\n");
 }
 
-static void cli_version_line(const char *line)
+void cli_write_section_line(const char *line)
+{
+    cli_write(CLI_SECTION_INDENT);
+    cli_write_line(line);
+}
+
+void cli_write_detail_line(const char *line)
 {
     cli_write(CLI_DETAIL_INDENT);
     cli_write_line(line);
@@ -218,8 +228,8 @@ static void cli_version_line(const char *line)
 
 static void cli_version(void)
 {
-    cli_write(CLI_SECTION_INDENT "APP Firmware\r\n");
-    version_print_info(cli_version_line);
+    cli_write_section_line("APP Firmware");
+    version_print_info(cli_write_detail_line);
 }
 
 static void cli_status(void)

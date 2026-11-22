@@ -1,6 +1,6 @@
 #include "audio.h"
 #include "project_config.h"
-#include "es8388.h"
+#include "wm8978.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -39,7 +39,7 @@ bool audio_init(void)
     }
     if (!audio_ready)
     {
-        const HAL_StatusTypeDef status = es8388_init();
+        const HAL_StatusTypeDef status = wm8978_init();
         if (status != HAL_OK)
         {
             RLOG_ERR("Audio initialization failed (%u)", (unsigned)status);
@@ -47,7 +47,7 @@ bool audio_init(void)
             return false;
         }
         audio_ready = true;
-        RLOG_INFO("Audio initialized, output muted");
+        RLOG_INFO("Audio ready: WM8978, I2S 48 kHz, speaker muted");
     }
     audio_end();
     return true;
@@ -60,7 +60,11 @@ bool audio_record(int16_t *pcm, size_t frames)
     {
         return false;
     }
-    const HAL_StatusTypeDef status = es8388_record(pcm, frames);
+    const HAL_StatusTypeDef status = wm8978_record(pcm, frames);
+    if (status != HAL_OK)
+    {
+        RLOG_ERR("Audio record failed (%u)", (unsigned)status);
+    }
     audio_end();
     return status == HAL_OK;
 }
@@ -72,7 +76,43 @@ bool audio_play(const int16_t *pcm, size_t frames)
     {
         return false;
     }
-    const HAL_StatusTypeDef status = es8388_play(pcm, frames);
+    const HAL_StatusTypeDef status = wm8978_play(pcm, frames);
+    if (status != HAL_OK)
+    {
+        RLOG_ERR("Audio play failed (%u)", (unsigned)status);
+    }
+    audio_end();
+    return status == HAL_OK;
+}
+
+bool audio_record_blocks(audio_capture_sink_t sink, void *context, size_t max_frames)
+{
+    if (sink == NULL || max_frames == 0U || max_frames > SIZE_MAX / (2U * sizeof(int16_t)) ||
+        !audio_begin(true))
+    {
+        return false;
+    }
+    const HAL_StatusTypeDef status = wm8978_record_blocks(sink, context, max_frames);
+    if (status != HAL_OK)
+    {
+        RLOG_ERR("Audio record failed (%u)", (unsigned)status);
+    }
+    audio_end();
+    return status == HAL_OK;
+}
+
+bool audio_play_blocks(audio_play_source_t source, void *context, size_t frames)
+{
+    if (source == NULL || frames == 0U || frames > SIZE_MAX / (2U * sizeof(int16_t)) ||
+        !audio_begin(true))
+    {
+        return false;
+    }
+    const HAL_StatusTypeDef status = wm8978_play_blocks(source, context, frames);
+    if (status != HAL_OK)
+    {
+        RLOG_ERR("Audio play failed (%u)", (unsigned)status);
+    }
     audio_end();
     return status == HAL_OK;
 }

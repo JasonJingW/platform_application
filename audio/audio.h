@@ -13,4 +13,11 @@ bool audio_init(void);
 bool audio_record(int16_t *pcm, size_t frames);
 bool audio_play(const int16_t *pcm, size_t frames);
 
+/* Task-context callbacks run between DMA blocks. The capture sink returns false
+ * to end recording normally. The source fills every requested stereo frame. */
+typedef bool (*audio_capture_sink_t)(void *context, const int16_t *pcm, size_t frames);
+typedef void (*audio_play_source_t)(void *context, int16_t *pcm, size_t frames);
+bool audio_record_blocks(audio_capture_sink_t sink, void *context, size_t max_frames);
+bool audio_play_blocks(audio_play_source_t source, void *context, size_t frames);
+
 #endif
